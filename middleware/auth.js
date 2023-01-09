@@ -5,12 +5,10 @@ import passport from "passport";
 export const authenticate = passport.authenticate("jwt", {session: false})
 
 //Hacer token, establecerlo en el header
-export const signToken = (res, id) => {
+export const signToken = (id) => {
     const token = jwt.sign({sub: id}, process.env.SECRET, {
         "expiresIn": "1d"
     })
-
-    res.set("authorization", token)
 
     return token
 }
