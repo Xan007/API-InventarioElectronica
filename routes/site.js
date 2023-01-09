@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { validateRegister, validateLogin } from "../validators/users.js"
 import User from "../models/User.js"
-
+import { signToken, authenticate } from "../middleware/auth.js"
 
 const router = Router()
 
@@ -11,19 +11,58 @@ router.get("/", (req, res) => {
 })
 
 router.post("/login", validateLogin, async(req, res) => {
+    const { name, email, password } = req.body
 
+    let user = null
+
+    if (name) {
+        user = await User.findOne({ name: name })
+    } else if (email) {
+        user = await User.findOne({ email: email })
+    }
+    
+    if (!user)
+        return res.status(404).send("Couldn't find a user that match with name or email")
+
+    const passwordValid = await user.validatePassword(password)
+    if (!passwordValid)
+        return res.status(401).send("Password is not valid")
+
+    const token = signToken(user._id)
+    
+    res.set("Authorization", token)
+    res.send({
+        user: user,
+        token: token
+    })
 })
 
 router.post("/register", validateRegister, async(req, res) => {
     const { name, email, password } = req.body
 
-    const createdUser = new User({
+    let createdUser = new User({
         name: name,
         email: email,
         password: password
     })
     await createdUser.encryptPassword()
-    await createdUser.save()
+
+    try {
+        await createdUser.save()
+        createdUser = createdUser.toObject()
+        delete createdUser.password
+        delete createdUser.__v
+
+        const token = signToken(createdUser._id)
+        
+        res.set("Authorization", token)
+        res.send({
+            user: createdUser,
+            token: token
+        })
+    } catch (err) {
+        res.status(400).send(`Sucedio un error: ${err}`)
+    }
 })
 
 export default {router: router, endpoint: "/"}
