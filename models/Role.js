@@ -1,4 +1,4 @@
-import { Schema, Model } from "mongoose"
+import { Schema, model } from "mongoose"
 
 export const RoleList = ["admin", "user"]
 
@@ -11,6 +11,6 @@ const RoleSchema =  new Schema({
     versionKey: false
 })
 
-const Role = Model("Role", RoleSchema)
+const Role = model("Role", RoleSchema)
 
 export default Role

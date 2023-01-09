@@ -1,4 +1,4 @@
-import { Schema, Model } from "mongoose"
+import { Schema, model } from "mongoose"
 
 const ComponentSchema =  new Schema({
     name: {
@@ -11,6 +11,6 @@ const ComponentSchema =  new Schema({
     }
 })
 
-const Component = Model("Component", ComponentSchema)
+const Component = model("Component", ComponentSchema)
 
 export default Component

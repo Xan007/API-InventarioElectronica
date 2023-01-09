@@ -1,4 +1,4 @@
-import mongoose, { Schema, Model } from "mongoose"
+import mongoose, { Schema, model } from "mongoose"
 
 const ProjectSchema =  new Schema({
     title: {
@@ -28,6 +28,6 @@ const ProjectSchema =  new Schema({
     ]
 })
 
-const Project = Model("Project", ProjectSchema)
+const Project = model("Project", ProjectSchema)
 
 export default Project
