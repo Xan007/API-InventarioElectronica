@@ -5,10 +5,11 @@ import routes from "./routes/index.js"
 dotenv.config()
 
 import "./passportJWT.js"
+import "./db.js"
 
 const app = express()
-
 app.use(morgan("dev"))
+
 app.use(express.json())
 app.use("/", routes)
 
