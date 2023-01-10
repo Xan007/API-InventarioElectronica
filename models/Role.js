@@ -5,7 +5,8 @@ export const RoleList = ["admin", "user"]
 const RoleSchema =  new Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        enum: RoleList
     }
 }, {
     versionKey: false
