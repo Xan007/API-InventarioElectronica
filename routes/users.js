@@ -10,7 +10,7 @@ router.get("/", (req, res) => {
 })
 
 //Añade un componente
-router.post("/component", authenticate, validateComponent, (req, res) => {
+router.post("/addComponent", authenticate, validateComponent, (req, res) => {
     
 })
 
