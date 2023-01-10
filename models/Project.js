@@ -1,98 +1,98 @@
-import mongoose, { Schema, model } from "mongoose"
-import { updateComponent, addComponent, deleteComponent } from "../helpers/componentHelper.js"
+import mongoose, { Schema, model } from "mongoose";
+import {
+  updateComponent,
+  addComponent,
+  deleteComponent,
+} from "../helpers/componentHelper.js";
 
-const ProjectSchema =  new Schema({
-    title: {
-        type: String,
-        required: true
+const ProjectSchema = new Schema({
+  title: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  about: {
+    type: String,
+  },
+  components: [
+    {
+      componentId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Component",
+        required: true,
+      },
+      amount: {
+        type: Number,
+        required: true,
+      },
     },
-    about: {
-        type: String
+  ],
+  participants: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
     },
-    components: [
-        {
-            componentId: {
-                type: mongoose.Types.ObjectId,
-                ref: "Component",
-                required: true,
-                unique: true
-            },
-            amount: {
-                type: Number,
-                required: true
-            }
-        }
-    ],
-    participants: [
-        {
-            type: mongoose.Types.ObjectId,
-            ref: "User",
-            unique: true
-        }
-    ],
-    admins: [
-        {
-            type: mongoose.Types.ObjectId,
-            ref: "User",
-            unique: true
-        }
-    ]
-})
+  ],
+  admins: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+});
 
-ProjectSchema.method("addUser", async(userId, isAdmin) => {
-    if (isAdmin === true)
-        this.admins.push(userId)
-    this.participants.push(userId)
+const isInArray = (arr, item) => {
+  return arr.some((arrItem) => arrItem === item);
+};
 
-    try {
-        await this.save()
-    } catch (err) {
-        throw new Error(err)
-    }  
-})
+ProjectSchema.method("isAdmin", function (userId) {
+  return isInArray(this.admins, userId);
+});
 
-ProjectSchema.method("removeUser", async(userId) => {
-    this.admins = this.admins.filter((adminId) => adminId !== userId)
-    this.participants = this.participants.filter((id) => id !== userId)
+//Añade admin
+ProjectSchema.method("addAdmin", function (userId) {
+  if (isInArray(this.admins, userId)) return "Admin already existing";
 
-    try {
-        await this.save()
-    } catch (err) {
-        throw new Error(err)
-    }
-})
+  this.admins.push(userId);
+  this.addUser(userId);
+});
 
-ProjectSchema.method("updateComponent", async(componentId, amount) => {
-    this.components = updateComponent(this.components, componentId, amount)
+//Quita admin
+ProjectSchema.method("removeAdmin", function (userId) {
+  this.admins = this.admins.filter((adminId) => adminId !== userId);
+});
 
-    try {
-        await this.save()
-        return componentToUpdate
-    } catch (err) {
-        throw new Error(err)
-    }
-})
+//Añade usuario
+ProjectSchema.method("addUser", function (userId) {
+  if (isInArray(this.participants, userId)) return "User already existing";
 
-ProjectSchema.method("addComponent", async(componentId, amount) => {
-    this.components = addComponent(this.components, componentId, amount)
+  this.participants.push(userId);
+});
 
-    try {
-        await this.save()
-    } catch (err) {
-        throw new Error(err)
-    }
-})
+//Elimina usuario
+ProjectSchema.method("removeUser", function (userId) {
+  this.admins = this.admins.filter((adminId) => adminId !== userId);
+  this.participants = this.participants.filter((id) => id !== userId);
+});
 
-ProjectSchema.method("deleteComponent", async(componentId) => {
-    this.components = deleteComponent(this.components, componentId)
+//Actualiza componente existente
+ProjectSchema.method("updateComponent", function (componentId, amount) {
+  this.components = updateComponent(this.components, componentId, amount);
+});
 
-    try {
-        await this.save()
-    } catch (err) {
-        throw new Error(err)
-    }
-})
+//Añade componente
+ProjectSchema.method("addComponent", function (componentId, amount) {
+  if (isInArray(this.components, componentId))
+    return "Component already existing";
 
-const Project = model("Project", ProjectSchema)
+  this.components = addComponent(this.components, componentId, amount);
+});
 
-export default Project
+//Elimina componente
+ProjectSchema.method("deleteComponent", function (componentId) {
+  this.components = deleteComponent(this.components, componentId);
+});
+
+const Project = model("Project", ProjectSchema);
+
+export default Project;
