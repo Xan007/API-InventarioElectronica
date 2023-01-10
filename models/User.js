@@ -1,6 +1,8 @@
 import mongoose, { Schema, model } from "mongoose"
 import bcrypt from "bcryptjs"
 
+import { updateComponent, addComponent, deleteComponent } from "../helpers/componentHelper.js"
+
 const UserSchema =  new Schema({
     name: {
         type: String,
@@ -18,8 +20,14 @@ const UserSchema =  new Schema({
     },
     components: [
         {
-            type: mongoose.Types.ObjectId,
-            ref: "Component"
+            componentId: {
+                type: mongoose.Types.ObjectId,
+                ref: "Component"
+            },
+            amount: {
+                type: Number,
+                required: true
+            }
         }
     ]
 })
@@ -30,6 +38,36 @@ UserSchema.method("encryptPassword", async function () {
 
 UserSchema.method("validatePassword", async function (plainPassword) {
     return bcrypt.compare(plainPassword, this.password)
+})
+
+UserSchema.method("updateComponent", async(componentId, amount) => {
+    this.components = updateComponent(this.components, componentId, amount)
+
+    try {
+        await this.save()
+    } catch (err) {
+        throw new Error(err)
+    }
+})
+
+UserSchema.method("addComponent", async(componentId, amount) => {
+    this.components = addComponent(this.components, componentId, amount)
+
+    try {
+        await this.save()
+    } catch (err) {
+        throw new Error(err)
+    }
+})
+
+UserSchema.method("deleteComponent", async(componentId) => {
+    this.components = deleteComponent(this.components, componentId)
+
+    try {
+        await this.save()
+    } catch (err) {
+        throw new Error(err)
+    }
 })
 
 const User = model("User", UserSchema)
