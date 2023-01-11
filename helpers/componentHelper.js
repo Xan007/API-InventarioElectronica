@@ -1,3 +1,7 @@
+const isInArray = (arr, item) => {
+  return arr.some((arrItem) => arrItem === item);
+};
+
 export const updateComponent = async (componentsArray, componentId, amount) => {
   const index = componentsArray.findIndex(
     (arr) => arr.componentId === componentId
@@ -14,6 +18,9 @@ export const updateComponent = async (componentsArray, componentId, amount) => {
 };
 
 export const deleteComponent = async (componentsArray, componentId) => {
+  if (!isInArray(componentsArray, componentId))
+    throw new Error("Component doesn't exist");
+
   componentsArray = componentsArray.filter(
     (arr) => arr.componentId !== componentId
   );
@@ -22,6 +29,9 @@ export const deleteComponent = async (componentsArray, componentId) => {
 };
 
 export const addComponent = async (componentsArray, componentId, amount) => {
+  if (isInArray(componentsArray, componentId))
+    throw new Error("Component already existing");
+
   componentsArray.push({
     componentId: componentId,
     amount: amount,
