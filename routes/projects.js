@@ -1,31 +1,21 @@
 import { Router } from "express";
-import { authProject, validateProject } from "../validators/projects.js";
-import { checkRole, userHasRole } from "../middleware/auth.js";
+import { authenticate, checkRole, userHasRole } from "../middleware/auth.js";
 
 import Project from "../models/Project.js";
 import User from "../models/User.js";
-import { isValidObjectId } from "mongoose";
+import Component from "../models/Component.js";
+
+import { authProject, validateProject } from "../validators/projects.js";
+import { validateUpdateOrAdd, checkComponentId } from "../validators/components.js"
+import { checkUserId } from "../validators/users.js"
 
 const router = Router();
 
-const checkUserId = async (req, res, next) => {
-  const { userId } = req.body;
-
-  if (!userId)
-    return res.status(400).send("Couldn't find userId in request's body");
-
-  if (!isValidObjectId(userId))
-    return res.status(400).send(`userId: ${userId} is not valid`);
-
-  if (!(await User.exists({ _id: userId })))
-    return res.status(404).send(`Couldn't find a user with id: ${userId}`);
+const checkAccess = async (req, res, next) => {
+  if (!req.project.isAdmin(req.user._id) || !userHasRole(req.user, "admin"))
+    return res.status(401).send("Unathorized");
 
   return next();
-};
-
-const checkAccess = async (project, user) => {
-  if (!project.isAdmin(user._id) || !userHasRole(user, "admin"))
-    return "Unathorized";
 };
 
 //Crea un proyecto
@@ -44,16 +34,50 @@ router.post("/", checkRole("user"), validateProject, async (req, res) => {
   }
 });
 
+router.post(
+  "/:projectId/addComponent",
+  authenticate,
+  authProject,
+  checkAccess,
+  validateUpdateOrAdd,
+  async (req, res) => {
+    req.project.addUser(req.body.componentId, req.body.amount);
+    await req.project.save();
+  }
+);
+
+router.post(
+  "/:projectId/removeComponent",
+  authenticate,
+  authProject,
+  checkAccess,
+  checkComponentId,
+  async (req, res) => {
+    req.project.removeComponent(req.body.componentId);
+    await req.project.save();
+  }
+);
+
+router.post(
+  "/:projectId/updateComponent",
+  authenticate,
+  authProject,
+  checkAccess,
+  validateUpdateOrAdd,
+  async (req, res) => {
+    req.project.updateComponent(req.body.componentId, req.body.amount);
+    await req.project.save();
+  }
+);
+
 //Añadir usuario
 router.post(
   "/:projectId/addUser",
-  checkRole("user", "admin"),
+  authenticate,
   authProject,
+  checkAccess,
   checkUserId,
   async (req, res) => {
-    if (checkAccess(req.project, req.user) == "Unathorized")
-      return res.status(401).send("Unathorized");
-
     req.project.addUser(req.body.userId);
     await req.project.save();
   }
@@ -62,13 +86,12 @@ router.post(
 //Eliminar un usuario
 router.post(
   "/:projectId/removeUser",
-  checkRole("user", "admin"),
+  authenticate,
   authProject,
+  checkAccess,
   checkUserId,
-  async (req, res) => {
-    if (checkAccess(req.project, req.user) == "Unathorized")
-      return res.status(401).send("Unathorized");
 
+  async (req, res) => {
     req.project.removeUser(req.body.userId);
     await req.project.save();
   }
@@ -76,13 +99,11 @@ router.post(
 
 router.post(
   "/:projectId/addAdmin",
-  checkRole("user", "admin"),
+  authenticate,
   authProject,
+  checkAccess,
   checkUserId,
   async (req, res) => {
-    if (checkAccess(req.project, req.user) == "Unathorized")
-      return res.status(401).send("Unathorized");
-
     req.project.addAdmin(req.body.userId);
     await req.project.save();
   }
@@ -90,13 +111,11 @@ router.post(
 
 router.post(
   "/:projectId/removeAdmin",
-  checkRole("user", "admin"),
+  authenticate,
   authProject,
+  checkAccess,
   checkUserId,
   async (req, res) => {
-    if (checkAccess(req.project, req.user) == "Unathorized")
-      return res.status(401).send("Unathorized");
-
     req.project.removeAdmin(req.body.userId);
     await req.project.save();
   }
