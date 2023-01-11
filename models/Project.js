@@ -51,7 +51,7 @@ ProjectSchema.method("isAdmin", function (userId) {
 
 //Añade admin
 ProjectSchema.method("addAdmin", function (userId) {
-  if (isInArray(this.admins, userId)) return "Admin already existing";
+  if (isInArray(this.admins, userId)) new Error("Admin already existing");
 
   this.admins.push(userId);
   this.addUser(userId);
@@ -64,7 +64,7 @@ ProjectSchema.method("removeAdmin", function (userId) {
 
 //Añade usuario
 ProjectSchema.method("addUser", function (userId) {
-  if (isInArray(this.participants, userId)) return "User already existing";
+  if (isInArray(this.participants, userId)) return new Error("User already existing");
 
   this.participants.push(userId);
 });
@@ -83,7 +83,7 @@ ProjectSchema.method("updateComponent", function (componentId, amount) {
 //Añade componente
 ProjectSchema.method("addComponent", function (componentId, amount) {
   if (isInArray(this.components, componentId))
-    return "Component already existing";
+    return new Error("Component already existing")
 
   this.components = addComponent(this.components, componentId, amount);
 });
