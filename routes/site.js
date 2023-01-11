@@ -32,7 +32,7 @@ router.post("/login", validateLogin, async (req, res) => {
 
   res.set("Authorization", `JWT ${token}`);
   res.send({
-    user: user,
+    user: user.safeReturn(),
     token: token,
   });
 });
@@ -57,7 +57,7 @@ router.post("/register", validateRegister, async (req, res) => {
 
     res.set("Authorization", `JWT ${token}`);
     res.send({
-      user: createdUser,
+      user: createdUser.safeReturn(),
       token: token,
     });
   } catch (err) {
