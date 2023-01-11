@@ -51,7 +51,7 @@ ProjectSchema.method("isAdmin", function (userId) {
 
 //Añade admin
 ProjectSchema.method("addAdmin", function (userId) {
-  if (isInArray(this.admins, userId)) new Error("Admin already existing");
+  if (isInArray(this.admins, userId)) throw new Error("Admin already existing");
 
   this.admins.push(userId);
   this.addUser(userId);
@@ -59,18 +59,22 @@ ProjectSchema.method("addAdmin", function (userId) {
 
 //Quita admin
 ProjectSchema.method("removeAdmin", function (userId) {
+  if (!isInArray(this.admins, userId)) throw new Error(`Couldn't find an admin with id: ${userId}`);
+
   this.admins = this.admins.filter((adminId) => adminId !== userId);
 });
 
 //Añade usuario
 ProjectSchema.method("addUser", function (userId) {
-  if (isInArray(this.participants, userId)) return new Error("User already existing");
+  if (isInArray(this.participants, userId)) throw new Error("User already existing");
 
   this.participants.push(userId);
 });
 
 //Elimina usuario
 ProjectSchema.method("removeUser", function (userId) {
+  if (!isInArray(this.participants, userId)) throw new Error(`Couldn't find an user with id: ${userId}`);
+
   this.admins = this.admins.filter((adminId) => adminId !== userId);
   this.participants = this.participants.filter((id) => id !== userId);
 });
@@ -82,9 +86,6 @@ ProjectSchema.method("updateComponent", function (componentId, amount) {
 
 //Añade componente
 ProjectSchema.method("addComponent", function (componentId, amount) {
-  if (isInArray(this.components, componentId))
-    return new Error("Component already existing")
-
   this.components = addComponent(this.components, componentId, amount);
 });
 

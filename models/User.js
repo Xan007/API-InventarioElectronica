@@ -47,6 +47,14 @@ const UserSchema = new Schema({
   },
 });
 
+UserSchema.method("safeReturn", function() {
+  const objectUser = this.toObject();
+  delete objectUser.password;
+  delete objectUser.__v;
+
+  return objectUser
+})
+
 UserSchema.method("encryptPassword", async function () {
   this.password = await bcrypt.hash(this.password, 10);
 });
@@ -57,32 +65,14 @@ UserSchema.method("validatePassword", async function (plainPassword) {
 
 UserSchema.method("updateComponent", async function (componentId, amount) {
   this.components = updateComponent(this.components, componentId, amount);
-
-  try {
-    await this.save();
-  } catch (err) {
-    throw new Error(err);
-  }
 });
 
 UserSchema.method("addComponent", async function (componentId, amount) {
   this.components = addComponent(this.components, componentId, amount);
-
-  try {
-    await this.save();
-  } catch (err) {
-    throw new Error(err);
-  }
 });
 
 UserSchema.method("deleteComponent", async function (componentId) {
   this.components = deleteComponent(this.components, componentId);
-
-  try {
-    await this.save();
-  } catch (err) {
-    throw new Error(err);
-  }
 });
 
 const User = model("User", UserSchema);
