@@ -19,11 +19,10 @@ export const userHasRole = (user, ...roles) => {
 
 //Auto authenticate
 export const checkRole = (...roles) => {
-  return async function (req, res, next) {
-    if (!authenticate(req, res, next)) return;
+  return [authenticate, async function (req, res, next) {
     const hasPermission = userHasRole(req.user, ...roles);
     if (hasPermission) return next();
 
     res.status(403).send(`Endpoint only for: ${roles.join(", ")}`);
-  };
+  }]
 };
