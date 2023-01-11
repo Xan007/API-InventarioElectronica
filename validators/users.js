@@ -1,6 +1,6 @@
-import { body, oneOf } from "express-validator";
+import { body, check, oneOf } from "express-validator";
+import { validateSchema } from "../helpers/validatorHelper.js"
 
-import validateSchema from "../middleware/validateSchema.js";
 import User from "../models/User.js";
 
 export const validateRegister = [
@@ -24,12 +24,13 @@ export const validateLogin = [
 ];
 
 export const checkUserId = [
-  body("userId")
+  check("userId", "UserId is required")
   .exists()
   .isMongoId()
   .custom(async(val) => {
     return await User.exists({_id: val})
-  }),
+  })
+  .withMessage("User doesn't exist"),
   function (req, res, next) {
     validateSchema(req, res, next);
   },

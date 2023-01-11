@@ -1,6 +1,6 @@
 import { body } from "express-validator";
 
-import validateSchema from "../middleware/validateSchema.js";
+import { validateSchema } from "../helpers/validatorHelper.js"
 
 import Component from "../models/Component.js";
 
